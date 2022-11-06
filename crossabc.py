@@ -141,19 +141,21 @@ class CrossABC:
         return self._df
 
     # 描画
-    def draw_histgram(
+    def draw_histgram(  # type: ignore
         self, ax: Axes, mode: int = 0, cumtype: bool = False, threshold: float | None = None, **kwargs
     ) -> None:
         self._check_kwds(kwargs)
         df = self.get_histgram(mode, cumtype)
         self._draw(ax, df, mode, threshold, fmt="d", **kwargs)
 
-    def draw_cum_distribution(self, ax: Axes, mode: int = 0, threshold: float | None = None, **kwargs) -> None:
+    def draw_cum_distribution(  # type: ignore
+        self, ax: Axes, mode: int = 0, threshold: float | None = None, **kwargs
+    ) -> None:
         self._check_kwds(kwargs)
         df = self.get_cum_distribution(mode)
         self._draw(ax, df, mode, threshold, fmt=".4f", **kwargs)
 
-    def _check_kwds(self, kwags) -> None:
+    def _check_kwds(self, kwags) -> None:  # type: ignore
         valid_kwds = signature(self._draw).parameters.keys()
         if any([k not in valid_kwds for k in kwags]):
             invalid_args = ", ".join([k for k in kwags if k not in valid_kwds])
