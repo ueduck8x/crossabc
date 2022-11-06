@@ -1,0 +1,74 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: crossabc
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  POETRY_VERSION: 1.1.13
+  POETRY_URL: https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Install Dependencies
+      run: |
+        poetry install --no-interaction
+
+    - name: Run Tests with pytest
+      run: |
+        poetry run pytest .
+
+    - name: Type Check with mypy
+      run: |
+        poetry run mypy .
+
+    - name: Sort Module with isort
+      run: |
+        poetry run isort .
+
+    - name: Apply Code Formatter
+      run: |
+        poetry run black .
+
+    - name: Update isort and black Change
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: apply isort and black
+        commit_user_name: GitHub Actions
+        commit_user_email: actions@github.com
+        ref: ${{ github.head_ref }}
+
+    - name: Export requirements.txt
+      run: |
+        poetry export -f requirements.txt --output requirements.txt
+    - name: Update requirements.txt
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: update requirements.txt
+        commit_user_name: GitHub Actions
+        commit_user_email: actions@github.com
+        ref: ${{ github.head_ref }}
