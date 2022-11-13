@@ -22,17 +22,17 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.7"
-numpy = ">=1.21.1"
-pandas = ">=1.1.5"
+numpy = "^1.21.1"
+pandas = "^1.1.5"
 
 [tool.poetry.dev-dependencies]
-black = ">=22.10.0"
-flake8-bugbear = ">=22.10.27"
-pyproject-flake8 = ">=5.0.4.post1"
-isort = ">=4.3.21"
-mypy = ">=0.990"
-pytest = ">=7.2.0"
-setuptools = "<=59.8.0"
+black = "^22.10.0"
+flake8-bugbear = "^22.10.27"
+pyproject-flake8 = "^5.0.4.post1"
+isort = "^4.3.21"
+mypy = "^0.990"
+pytest = "^7.2.0"
+setuptools = "<60.0.0"
 
 [tool.poetry.scripts]
 crossabc = "crossabc.crossabc:main"
