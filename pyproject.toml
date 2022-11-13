@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "crossabc"
+name = "crossabc-core"
 version = "0.1.0"
 description = "Easily Cross ABC analyzer"
 authors = ["hrt0809 <hrt.ueda0809@gmail.com>"]
@@ -8,21 +8,14 @@ authors = ["hrt0809 <hrt.ueda0809@gmail.com>"]
 python = "^3.10"
 numpy = "*"
 pandas = "*"
-matplotlib = "*"
-seaborn = "*"
-jupyterlab = {version="*", optional=true}
 
 [tool.poetry.dev-dependencies]
 black = "*"
 flake8-bugbear = "*"
 pyproject-flake8 = "*"
-mypy = "*"
 isort = "*"
-pre-commit = "*"
+mypy = "*"
 pytest = "*"
-
-[tool.poetry.extras]
-interactive = ["jupyterlab"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -39,28 +32,25 @@ ignore = "E203"
 line-length = 119
 exclude = '''
 (
-    migrations
-    | .mypy_cache
+    .mypy_cache
     | .pytest_cache
-    | .tox
     | .venv
-    | dist
 )
 '''
 
 [tool.mypy]
 # common
 python_version = "3.10"
-show_column_numbers = true
-show_error_context = true
-ignore_missing_imports = true
 check_untyped_defs = true
 disallow_untyped_defs = true
+ignore_missing_imports = true
+show_column_numbers = true
+show_error_context = true
 # warning
+warn_redundant_casts = true
 warn_return_any = true
 warn_unused_configs = true
-warn_redundant_casts = true
 
 [tools.isort]
-profile = "black"
 line_length = 119
+profile = "black"
