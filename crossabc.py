@@ -43,7 +43,7 @@ class CrossABC:
         inds = {i: name for i, name in enumerate(indicators, self.IND1)}
         self._indicators = inds
         axis_names = [f"rank_{i}" for i in range(1, self.num_ranks + 1)]
-        self.axis_names = axis_names  # 軸名
+        self.axis_names = axis_names
         self._give_rank()
         self._histgrams: CrossABCHistArray = {}
         self._cum_histgrams: CrossABCHistArray = {}
