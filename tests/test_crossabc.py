@@ -6,10 +6,7 @@ from crossabc import CrossABC
 
 
 def test_input_indicators() -> None:
-    data = {
-        "item_1": {"sales": 30750, "profit": 8900},
-        "item_2": {"sales": 29000, "profit": 3430}
-    }
+    data = {"item_1": {"sales": 30750, "profit": 8900}, "item_2": {"sales": 29000, "profit": 3430}}
     false_indicators_1 = ["sales", "profit", "sales_figures"]
     false_indicators_2 = ["sales", "profiit"]
     indicators = ["sales", "profit"]
@@ -27,10 +24,7 @@ def test_input_indicators() -> None:
 
 
 def test_input_dataframe_str() -> None:
-    data = {
-        "item_1": {"sales": "30750円", "profit": 8900},
-        "item_2": {"sales": 29000, "profit": 3430}
-    }
+    data = {"item_1": {"sales": "30750円", "profit": 8900}, "item_2": {"sales": 29000, "profit": 3430}}
     df = pd.DataFrame(data).T
     with pytest.raises(Exception) as e:
         _ = CrossABC(df, list(df.columns))
@@ -38,19 +32,13 @@ def test_input_dataframe_str() -> None:
 
 
 def test_input_dataframe_str_can_convert_int() -> None:
-    data = {
-        "item_1": {"sales": 30750, "profit": "8900"},
-        "item_2": {"sales": 29000, "profit": 3430}
-    }
+    data = {"item_1": {"sales": 30750, "profit": "8900"}, "item_2": {"sales": 29000, "profit": 3430}}
     df = pd.DataFrame(data).T
     CrossABC(df, list(df.columns))
 
 
 def test_input_dataframe_nan() -> None:
-    data = {
-        "item_1": {"sales": 30750, "profit": 8900},
-        "item_2": {"sales": 29000, "profit": np.nan}
-    }
+    data = {"item_1": {"sales": 30750, "profit": 8900}, "item_2": {"sales": 29000, "profit": np.nan}}
     df = pd.DataFrame(data).T
     with pytest.raises(TypeError) as e:
         _ = CrossABC(df, list(df.columns))
@@ -58,10 +46,7 @@ def test_input_dataframe_nan() -> None:
 
 
 def test_input_dataframe_negative_value() -> None:
-    data = {
-        "item_1": {"sales": -30750, "profit": 8900},
-        "item_2": {"sales": 29000, "profit": 3430}
-    }
+    data = {"item_1": {"sales": -30750, "profit": 8900}, "item_2": {"sales": 29000, "profit": 3430}}
     df = pd.DataFrame(data).T
     with pytest.raises(ValueError) as e:
         _ = CrossABC(df, list(df.columns))
