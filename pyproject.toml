@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "crossabc"
-version = "0.1.4"
+version = "0.1.5"
 description = "Easily CrossABC analyzer"
 authors = ["Hiroto Ueda <hrt.ueda0809@gmail.com>"]
 maintainers = ["Hiroto Ueda <hrt.ueda0809@gmail.com>"]
@@ -21,17 +21,18 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9"
-numpy = ">=1.23.4"
-pandas = ">=1.5.1"
+python = ">=3.7"
+numpy = ">=1.21.1"
+pandas = ">=1.1.5"
 
 [tool.poetry.dev-dependencies]
-black = ">=22.10"
-flake8-bugbear = ">=22.10"
+black = ">=22.10.0"
+flake8-bugbear = ">=22.10.27"
 pyproject-flake8 = ">=5.0.4.post1"
-isort = ">=4.3"
+isort = ">=4.3.21"
 mypy = ">=0.990"
 pytest = ">=7.2.0"
+setuptools = "<=59.8.0"
 
 [tool.poetry.scripts]
 crossabc = "crossabc.crossabc:main"
