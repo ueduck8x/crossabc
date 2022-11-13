@@ -1,13 +1,10 @@
-#####! /usr/bin/env python3
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import copy
-from inspect import signature
 
 import numpy as np
 import pandas as pd
-import seaborn as sns
-from matplotlib.axes import Axes
 
 CrossABCHistArray = dict[tuple[int, int], dict[int, int]]
 CrossABCDistArray = dict[tuple[int, int], dict[int, float]]
@@ -23,49 +20,62 @@ class CrossABC:
     CASH_COW = "cash_cow"
     DOG = "dog"
 
-    def __init__(self, df: pd.DataFrame) -> None:
-        self._check_input(df)
-        self.axis_names = [f"rank_{i}" for i in range(1, self.num_ranks + 1)]
-        inds = {i: name for i, name in enumerate(df.columns, self.IND1)}
-        self._indicators = inds
+    def _check_input(self, df: pd.DataFrame, indicators: list[str]) -> None:
+        if len(indicators) != 2:
+            raise Exception("Length of indicators must be 2.")
+
+        for i in indicators:
+            if not (i in df.columns):
+                raise KeyError(f"Indicator {i} does not exist in the df.columns.")
+
+        # When df[[i for i in indicators]] element does not int or float
+        for i in indicators:
+            # The exception data portion is returned in NaN.
+            # The other lines are converted to numerical values.
+            df[i] = pd.to_numeric(df[i], errors="coerce")
+            if df[i].notnull().all() is False:
+                raise Exception(f"There is a non-numeric element in df[{i}].")
+
+    def __init__(self, df: pd.DataFrame, indicators: list[str]) -> None:
+        self._check_input(df, indicators)
         self._df = df
+        inds = {i: name for i, name in enumerate(indicators, self.IND1)}
+        self._indicators = inds
+        axis_names = [f"rank_{i}" for i in range(1, self.num_ranks + 1)]
+        self.axis_names = axis_names  # 軸名
+        self._give_rank()
         self._histgrams: CrossABCHistArray = {}
         self._cum_histgrams: CrossABCHistArray = {}
         self._cum_distributions: CrossABCDistArray = {}
-        self._give_rank()
         self._make_histgrams()
         self._make_cum_histgrams()
         self._make_cum_distributions()
 
-    # 入力チェック
-    def _check_input(self, df: pd.DataFrame) -> None:
-        if len(df.columns) != 2:
-            raise Exception("Number of elements in df must be 2!")
-
-    # ランク付け作業
     def _give_rank(self) -> None:
         for n in self._indicators.values():
             self._df = self._df.sort_values(n, ascending=False)
             cum_ratio_series = self._df[n].cumsum() / self._df[n].sum()
-            rank_series = np.ceil(cum_ratio_series * self.num_ranks).astype(int)
+            rank_series: pd.Series = np.ceil(cum_ratio_series * self.num_ranks)
+            rank_series = rank_series.astype(int)
             rank_series.name = f"rank_{n}"
             self._df = pd.concat([self._df, rank_series], axis=1)
 
-    # ヒストグラム/累積分布 作成
+    # make histgram/cumrative distribution
     def _make_histgrams(self) -> None:
-        rank_group = self._df.groupby([f"rank_{n}" for n in self._indicators.values()])
+        # Summarize the elements with rank i for indicator 1 and rank j for indicator 2.
+        groups = self._df.groupby([f"rank_{n}" for n in self._indicators.values()])
         for i in range(1, self.num_ranks + 1):
             for j in range(1, self.num_ranks + 1):
                 cnt, ind1_sum, ind2_sum = 0, 0, 0
                 try:
-                    rank_i_j_df: pd.DataFrame = rank_group.get_group((i, j))
-                    cnt = len(rank_i_j_df)
-                    ind1_sum = rank_i_j_df[self._indicators[self.IND1]].sum()
-                    ind2_sum = rank_i_j_df[self._indicators[self.IND2]].sum()
+                    group_ij: pd.DataFrame = groups.get_group((i, j))
+                    cnt = len(group_ij)
+                    ind1_sum = group_ij[self._indicators[self.IND1]].sum()
+                    ind2_sum = group_ij[self._indicators[self.IND2]].sum()
                 except KeyError:
                     pass
-                rank_i_j = {self.DEFAULT: cnt, self.IND1: ind1_sum, self.IND2: ind2_sum}
-                self._histgrams[i, j] = rank_i_j
+                summary_group_ij = {self.DEFAULT: cnt, self.IND1: ind1_sum, self.IND2: ind2_sum}
+                self._histgrams[i, j] = summary_group_ij
 
     def _make_cum_histgrams(self) -> None:
         self._cum_histgrams = copy.deepcopy(self._histgrams)
@@ -88,128 +98,46 @@ class CrossABC:
                     v = self._cum_histgrams[i, j][c] / m
                     self._cum_distributions[i, j][c] = v
 
-    # 要素抽出
-    def get_elements(self, *, ppm: str | None = None, threshold: float | None = None, mode: int = 0) -> pd.DataFrame:
-        if ppm is None and threshold is None:
-            raise Exception("Set the value to ONE of ppm and threshold")
-        if (ppm is not None) and (not isinstance(ppm, str)):
-            raise TypeError()
-        if (threshold is not None) and (not isinstance(threshold, float)):
-            raise TypeError()
-        if isinstance(threshold, float) and isinstance(ppm, str):
-            raise Exception(f"Set either {ppm = } or {threshold = } to None")
-        ans_df = pd.DataFrame()
-        if isinstance(threshold, float):
-            ans_df = self._get_elements_threshold(threshold, mode)
-        elif isinstance(ppm, str):
-            ans_df = self._get_elements_ppm(ppm)
-        for n in self._indicators.values():
-            ans_df = ans_df.sort_values(f"rank_{n}")
+    # extract elements
+    def _check_get_elements_input(self, ranks: list[int]) -> None:
+        for r in ranks:
+            if not (isinstance(r, int)):
+                raise TypeError(f"{r} is str. The element of ranks must be an 'int'")
+        for r in ranks:
+            if r <= 0 or self.num_ranks < r:
+                raise ValueError(f"{r} must be 0 < r < {self.num_ranks}")
+
+    def get_elements(self, ranks: list[int]) -> pd.DataFrame:
+        self._check_get_elements_input(ranks)
+        rank_ind1, rank_ind2 = ranks[0], ranks[1]
+        ind1_df = self._df[self._df[f"rank_{self._indicators[self.IND1]}"] <= rank_ind1]
+        ans_df = ind1_df[ind1_df[f"rank_{self._indicators[self.IND2]}"] <= rank_ind2]
         return ans_df
-
-    def _get_elements_threshold(self, threshold: float, mode: int) -> pd.DataFrame:
-        cum_dfs = []
-        for i in range(1, self.num_ranks + 1):
-            for j in range(1, self.num_ranks + 1):
-                v = self._cum_distributions[i, j][mode]
-                if v < threshold:
-                    ind1_df = self._df[self._df[f"rank_{self._indicators[self.IND1]}"] == i]
-                    ind2_df = ind1_df[ind1_df[f"rank_{self._indicators[self.IND2]}"] == j]
-                    cum_dfs.append(ind2_df)
-        cum_df = pd.concat(cum_dfs)
-        cum_df.drop_duplicates(inplace=True)
-        return cum_df
-
-    def _get_elements_ppm(self, ppm: str) -> pd.DataFrame:
-        ppm_cats = [self.STAR, self.PROB_CHILD, self.CASH_COW, self.DOG]
-        if not (ppm in ppm_cats):
-            raise Exception(f"Select one value from {ppm_cats} and input it into ppm")
-        mid_thrshld = int(self.num_ranks // 2)
-        ind1_df = pd.DataFrame()
-        if ppm in [self.STAR, self.PROB_CHILD]:
-            ind1_df = self._df[self._df[f"rank_{self._indicators[self.IND1]}"] <= mid_thrshld]
-        else:
-            ind1_df = self._df[self._df[f"rank_{self._indicators[self.IND1]}"] > mid_thrshld]
-        ind2_df = pd.DataFrame()
-        if ppm in [self.STAR, self.CASH_COW]:
-            ind2_df = ind1_df[ind1_df[f"rank_{self._indicators[self.IND2]}"] <= mid_thrshld]
-        else:
-            ind2_df = ind1_df[ind1_df[f"rank_{self._indicators[self.IND2]}"] > mid_thrshld]
-        return ind2_df
 
     def get_df(self) -> pd.DataFrame:
         return self._df
 
-    # 描画
-    def draw_histgram(  # type: ignore
-        self, ax: Axes, mode: int = 0, cumtype: bool = False, threshold: float | None = None, **kwargs
-    ) -> None:
-        self._check_kwds(kwargs)
-        df = self.get_histgram(mode, cumtype)
-        self._draw(ax, df, mode, threshold, fmt="d", **kwargs)
+    # get histgram/cum distribution
+    def _check_mode(self, mode: int) -> None:
+        if mode < self.DEFAULT or self.IND2 < mode:
+            raise ValueError("mode must be 0 or 1 or 2 (0: number of elements, 1: indicator 1, 2: indicator 2)")
 
-    def draw_cum_distribution(  # type: ignore
-        self, ax: Axes, mode: int = 0, threshold: float | None = None, **kwargs
-    ) -> None:
-        self._check_kwds(kwargs)
-        df = self.get_cum_distribution(mode)
-        self._draw(ax, df, mode, threshold, fmt=".4f", **kwargs)
-
-    def _check_kwds(self, kwags) -> None:  # type: ignore
-        valid_kwds = signature(self._draw).parameters.keys()
-        if any([k not in valid_kwds for k in kwags]):
-            invalid_args = ", ".join([k for k in kwags if k not in valid_kwds])
-            raise ValueError(f"Received invalid argument(s): {invalid_args}")
-
-    def get_histgram(self, mode: int = 0, cumtype: bool = False) -> pd.DataFrame:
+    def get_histgram_df(self, mode: int = 0, cumtype: bool = False) -> pd.DataFrame:
+        self._check_mode(mode)
         hist = [[0 for _ in range(self.num_ranks)] for _ in range(self.num_ranks)]
         for i in range(1, self.num_ranks + 1):
             for j in range(1, self.num_ranks + 1):
                 v = self._cum_histgrams[i, j][mode] if cumtype else self._histgrams[i, j][mode]
                 hist[i - 1][j - 1] = v
-        df = pd.DataFrame(hist, index=self.axis_names, columns=self.axis_names)
-        return df
+        histgram_df = pd.DataFrame(hist, index=self.axis_names, columns=self.axis_names)
+        return histgram_df
 
-    def get_cum_distribution(self, mode: int = 0) -> pd.DataFrame:
+    def get_cum_distribution_df(self, mode: int = 0) -> pd.DataFrame:
+        self._check_mode(mode)
         dist = [[0.0 for _ in range(self.num_ranks)] for _ in range(self.num_ranks)]
         for i in range(1, self.num_ranks + 1):
             for j in range(1, self.num_ranks + 1):
                 v = self._cum_distributions[i, j][mode]
                 dist[i - 1][j - 1] = v
-        df = pd.DataFrame(dist, index=self.axis_names, columns=self.axis_names)
-        return df
-
-    def _draw(
-        self,
-        ax: Axes,
-        df: pd.DataFrame,
-        mode: int,
-        threshold: float | None,
-        fmt: str,
-        *,
-        fontsize: int = 15,
-        label_fontsize: int = 15,
-        linewidth: int = 2,
-        linecolor: str = "black",
-        cmap: str = "Spectral_r",
-    ) -> None:
-        sns.heatmap(df, annot=True, fmt=fmt, annot_kws={"fontsize": fontsize}, cmap=cmap, ax=ax)
-        ax.set_ylabel(self._indicators[self.IND1], fontsize=label_fontsize)
-        ax.set_xlabel(self._indicators[self.IND2], fontsize=label_fontsize)
-        if threshold is not None:
-            self._draw_line(ax, mode, threshold, linewidth, linecolor)
-
-    def _draw_line(self, ax: Axes, mode: int, threshold: float, linewidth: int, linecolor: str) -> None:
-        for i in range(1, self.num_ranks + 1):
-            row_break, col_break = False, False
-            for j in reversed(range(1, self.num_ranks + 1)):
-                v_row = self._cum_distributions[i, j][mode]
-                v_col = self._cum_distributions[j, i][mode]
-                if v_row < threshold and row_break is False:
-                    ax.axvline(
-                        x=j - 0.01, ymin=1 - 0.1 * i, ymax=1 - 0.1 * (i - 1), linewidth=linewidth, color=linecolor
-                    )
-                    row_break = True
-                if v_col < threshold and col_break is False:
-                    ax.axhline(y=j - 0.01, xmin=0.1 * (i - 1), xmax=0.1 * i, linewidth=linewidth, color=linecolor)
-                    col_break = True
+        cumdist_df = pd.DataFrame(dist, index=self.axis_names, columns=self.axis_names)
+        return cumdist_df
