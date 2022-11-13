@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from crossabc import CrossABC
+from src.crossabc import CrossABC
 
 
 def test_input_indicators() -> None:
