@@ -15,10 +15,6 @@ class CrossABC:
     DEFAULT = 0
     IND1 = 1
     IND2 = 2
-    STAR = "star"
-    PROB_CHILD = "prob_child"
-    CASH_COW = "cash_cow"
-    DOG = "dog"
 
     def _check_input(self, df: pd.DataFrame, indicators: list[str]) -> None:
         if len(indicators) != 2:
