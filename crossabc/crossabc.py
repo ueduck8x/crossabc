@@ -35,7 +35,7 @@ class CrossABC:
 
         # When df[i] have negative value
         for i in indicators:
-            if len(df[df[i] > 0]) != len(df[i]):
+            if len(df[df[i] >= 0]) != len(df[i]):
                 raise ValueError(f"Column must NOT contain negative values, df[{i}] contains negative values")
 
     def __init__(self, df: pd.DataFrame, indicators: List[str]) -> None:
