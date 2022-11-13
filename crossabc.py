@@ -28,13 +28,18 @@ class CrossABC:
             if not (i in df.columns):
                 raise KeyError(f"Indicator {i} does not exist in the df.columns.")
 
-        # When df[[i for i in indicators]] element does not int or float
+        # When df[i] does not be int or float
         for i in indicators:
             # The exception data portion is returned in NaN.
             # The other lines are converted to numerical values.
             df[i] = pd.to_numeric(df[i], errors="coerce")
-            if df[i].notnull().all() is False:
-                raise Exception(f"There is a non-numeric element in df[{i}].")
+            if not (df[i].notnull().all()):
+                raise TypeError(f"There is a non-numeric element in df[{i}].")
+
+        # When df[i] have negative value
+        for i in indicators:
+            if len(df[df[i] > 0]) != len(df[i]):
+                raise ValueError(f"Column must NOT contain negative values, df[{i}] contains negative values")
 
     def __init__(self, df: pd.DataFrame, indicators: list[str]) -> None:
         self._check_input(df, indicators)
