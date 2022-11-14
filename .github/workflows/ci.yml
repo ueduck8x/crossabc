@@ -5,9 +5,9 @@ name: crossabc
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 env:
   POETRY_VERSION: 1.1.13
@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.7"]
 
     steps:
     - uses: actions/checkout@v3
