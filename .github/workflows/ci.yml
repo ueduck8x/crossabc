@@ -36,6 +36,7 @@ jobs:
 
     - name: Install Dependencies
       run: |
+        poetry env use ${{ matrix.python-version }}
         poetry install --no-interaction
 
     - name: Run Tests with pytest
