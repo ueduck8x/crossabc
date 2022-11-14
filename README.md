@@ -1,10 +1,15 @@
 # crossabc
 [![PyPI](https://img.shields.io/pypi/v/crossabc)](https://pypi.org/project/crossabc/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/crossabc)](https://pypi.org/project/crossabc/)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![license](https://img.shields.io/github/license/hrt0809/crossabc)](https://github.com/hrt0809/crossabc/blob/main/LICENSE)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![test](https://github.com/hrt0809/crossabc/actions/workflows/test.yml/badge.svg)](https://github.com/hrt0809/crossabc/actions/workflows/test.yml)
 
-Easily CrossABC analyzer
+Easily CrossABC (Pareto) analyzer.
+
+## Tutorial
+Click [here(Google Colaboratory)](https://colab.research.google.com/drive/1Tw-aOTaSmgdJdYyjLH3Nqt2F3k6-Bi9A?usp=sharing) for the CrossABC Tutorial. Note that the Tutorial is written in **Japanese**.
 
 ## Usage
 ```Python
