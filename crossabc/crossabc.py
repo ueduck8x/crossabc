@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import copy
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
 
-CrossABCHistArray = dict[tuple[int, int], dict[int, int]]
-CrossABCDistArray = dict[tuple[int, int], dict[int, float]]
+CrossABCHistArray = Dict[Tuple[int, int], Dict[int, int]]
+CrossABCDistArray = Dict[Tuple[int, int], Dict[int, float]]
 
 
 class CrossABC:
@@ -16,7 +17,7 @@ class CrossABC:
     IND1 = 1
     IND2 = 2
 
-    def _check_input(self, df: pd.DataFrame, indicators: list[str]) -> None:
+    def _check_input(self, df: pd.DataFrame, indicators: List[str]) -> None:
         if len(indicators) != 2:
             raise Exception("Length of indicators must be 2.")
 
@@ -34,10 +35,10 @@ class CrossABC:
 
         # When df[i] have negative value
         for i in indicators:
-            if len(df[df[i] > 0]) != len(df[i]):
+            if len(df[df[i] >= 0]) != len(df[i]):
                 raise ValueError(f"Column must NOT contain negative values, df[{i}] contains negative values")
 
-    def __init__(self, df: pd.DataFrame, indicators: list[str]) -> None:
+    def __init__(self, df: pd.DataFrame, indicators: List[str]) -> None:
         self._check_input(df, indicators)
         self._df = df
         inds = {i: name for i, name in enumerate(indicators, self.IND1)}
@@ -100,7 +101,7 @@ class CrossABC:
                     self._cum_distributions[i, j][c] = v
 
     # extract elements
-    def _check_get_elements_input(self, ranks: list[int]) -> None:
+    def _check_get_elements_input(self, ranks: List[int]) -> None:
         for r in ranks:
             if not (isinstance(r, int)):
                 raise TypeError(f"{r} is str. The element of ranks must be an 'int'")
@@ -108,7 +109,7 @@ class CrossABC:
             if r <= 0 or self.num_ranks < r:
                 raise ValueError(f"{r} must be 0 < r < {self.num_ranks}")
 
-    def get_elements(self, ranks: list[int]) -> pd.DataFrame:
+    def get_elements(self, ranks: List[int]) -> pd.DataFrame:
         self._check_get_elements_input(ranks)
         rank_ind1, rank_ind2 = ranks[0], ranks[1]
         ind1_df = self._df[self._df[f"rank_{self._indicators[self.IND1]}"] <= rank_ind1]

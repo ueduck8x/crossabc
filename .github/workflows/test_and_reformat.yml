@@ -1,16 +1,16 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: crossabc
+name: test-and-reformat
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 env:
-  POETRY_VERSION: 1.1.13
+  POETRY_VERSION: 1.2.2
   POETRY_URL: https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
 
     steps:
     - uses: actions/checkout@v3
@@ -48,7 +48,7 @@ jobs:
 
     - name: Sort Module with isort
       run: |
-        poetry run isort .
+        poetry run isort
 
     - name: Apply Code Formatter
       run: |
@@ -60,15 +60,4 @@ jobs:
         commit_message: apply isort and black
         commit_user_name: GitHub Actions
         commit_user_email: actions@github.com
-        ref: ${{ github.head_ref }}
-
-    - name: Export requirements.txt
-      run: |
-        poetry export -f requirements.txt --output requirements.txt
-    - name: Update requirements.txt
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: update requirements.txt
-        commit_user_name: GitHub Actions
-        commit_user_email: actions@github.com
-        ref: ${{ github.head_ref }}
+        branch: ${{ github.head_ref }}
