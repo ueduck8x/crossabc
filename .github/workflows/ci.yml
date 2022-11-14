@@ -36,6 +36,7 @@ jobs:
 
     - name: Install Dependencies
       run: |
+        poetry env use 3.7
         poetry install --no-interaction
 
     - name: Run Tests with pytest
