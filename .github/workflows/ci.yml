@@ -10,7 +10,7 @@ on:
     branches: [ main, develop ]
 
 env:
-  POETRY_VERSION: 1.1.13
+  POETRY_VERSION: 1.2.2
   POETRY_URL: https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.7"]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
 
     steps:
     - uses: actions/checkout@v3
@@ -36,7 +36,6 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        poetry env use 3.7
         poetry install --no-interaction
 
     - name: Run Tests with pytest
