@@ -33,7 +33,7 @@ numpy = [
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
-flake8-bugbear = "^22.10.27"
+flake8-bugbear = ">=22.10.27,<24.0.0"
 pyproject-flake8 = "^5.0.4.post1"
 isort = "^4.3.21"
 mypy = "^0.990"
